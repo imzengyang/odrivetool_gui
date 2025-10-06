@@ -95,9 +95,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </div>
         
-        {/* 页面内容 - 更大的间距 */}
+        {/* 页面内容 - 优化的间距 */}
         <div className="flex-1 overflow-auto">
-          <div className="p-6">
+          <div className="p-4">
             {children}
           </div>
         </div>

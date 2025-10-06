@@ -2,7 +2,7 @@ import React from 'react';
 
 const MotorControl: React.FC = () => {
   return (
-    <div className="p-6">
+    <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-4">电机控制</h1>
       
       <div className="mb-6">

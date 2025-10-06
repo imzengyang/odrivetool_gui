@@ -100,9 +100,9 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* 欢迎标题 - macOS风格 */}
-      <div className="bg-white/70 backdrop-blur-xl rounded-2xl p-8 border border-gray-200/50 shadow-sm">
+      <div className="bg-white/70 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800 mb-1">欢迎使用 ODrive GUI</h1>
@@ -147,11 +147,11 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* 主要内容区域 - macOS风格 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* 快速操作 */}
         <div className="lg:col-span-2">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
-            <h2 className="text-base font-semibold text-gray-800 mb-4">快速操作</h2>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-4">
+            <h2 className="text-base font-semibold text-gray-800 mb-3">快速操作</h2>
             <div className="grid grid-cols-2 gap-3">
               {quickActions.map((action, index) => {
                 const colors = getColorClasses(action.color);
@@ -177,8 +177,8 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* 最近活动 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-4">最近活动</h2>
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-4">
+          <h2 className="text-base font-semibold text-gray-800 mb-3">最近活动</h2>
           <div className="space-y-3">
             {recentActivities.map((activity, index) => (
               <div key={index} className="flex items-start space-x-3">
@@ -199,9 +199,9 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* 系统状态面板 - macOS风格 */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
-        <h2 className="text-base font-semibold text-gray-800 mb-4">系统状态</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-4">
+        <h2 className="text-base font-semibold text-gray-800 mb-3">系统状态</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-3 bg-green-50 rounded-full flex items-center justify-center">
               <Cpu className="w-8 h-8 text-green-600" />

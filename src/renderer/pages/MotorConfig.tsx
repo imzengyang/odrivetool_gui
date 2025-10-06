@@ -2,7 +2,7 @@ import React from 'react';
 
 const MotorConfig: React.FC = () => {
   return (
-    <div className="p-6">
+    <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-4">电机配置</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">

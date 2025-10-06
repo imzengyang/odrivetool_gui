@@ -57,9 +57,9 @@
     @apply input border-danger-500 focus:ring-danger-500;
   }
   
-  /* 卡片样式 */
+  /* 卡片样式 - 统一间距规范 */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-4;
   }
   
   .card-header {
