@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ODrive GUI</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #f8fafc;
+    }
+    
+    #root {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* 加载动画 */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #1e293b;
+      color: white;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #334155;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 18px;
+      font-weight: 500;
+    }
+  </style>
+  <script type="module" crossorigin src="./assets/index-c015b056.js"></script>
+  <link rel="stylesheet" href="./assets/index-f4e013b1.css">
+</head>
+<body>
+  <div id="root">
+    <!-- 初始加载动画 -->
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">正在启动 ODrive GUI...</div>
+    </div>
+  </div>
+  
+</body>
+</html>

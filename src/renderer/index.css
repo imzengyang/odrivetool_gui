@@ -1,0 +1,370 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 自定义基础样式 */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+  
+  * {
+    @apply border-gray-200;
+  }
+}
+
+/* 自定义组件样式 */
+@layer components {
+  /* 按钮样式 - Mac风格 */
+  .btn {
+    @apply px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-offset-1;
+  }
+  
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300;
+  }
+  
+  .btn-success {
+    @apply btn bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-warning {
+    @apply btn bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-ghost {
+    @apply btn bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-800 focus:ring-gray-500;
+  }
+  
+  /* 输入框样式 - Mac风格 */
+  .input {
+    @apply px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 bg-white;
+  }
+  
+  .input-error {
+    @apply input border-danger-500 focus:ring-danger-500;
+  }
+  
+  /* 卡片样式 */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  }
+  
+  .card-header {
+    @apply border-b border-gray-200 pb-4 mb-4;
+  }
+  
+  .card-title {
+    @apply text-lg font-semibold text-gray-900;
+  }
+  
+  .card-description {
+    @apply text-sm text-gray-600 mt-1;
+  }
+  
+  /* 状态指示器 */
+  .status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-connected {
+    @apply status-indicator bg-success-100 text-success-800;
+  }
+  
+  .status-disconnected {
+    @apply status-indicator bg-danger-100 text-danger-800;
+  }
+  
+  .status-warning {
+    @apply status-indicator bg-warning-100 text-warning-800;
+  }
+  
+  .status-idle {
+    @apply status-indicator bg-gray-100 text-gray-800;
+  }
+  
+  /* 导航样式 */
+  .nav-item {
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200;
+  }
+  
+  .nav-item-active {
+    @apply nav-item bg-primary-100 text-primary-700;
+  }
+  
+  .nav-item-inactive {
+    @apply nav-item text-gray-600 hover:bg-gray-100 hover:text-gray-900;
+  }
+  
+  /* 面板样式 */
+  .panel {
+    @apply bg-white border border-gray-200 rounded-lg overflow-hidden;
+  }
+  
+  .panel-header {
+    @apply px-4 py-3 border-b border-gray-200 bg-gray-50;
+  }
+  
+  .panel-body {
+    @apply p-4;
+  }
+  
+  /* 表格样式 */
+  .table {
+    @apply w-full border-collapse;
+  }
+  
+  .table th {
+    @apply px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200;
+  }
+  
+  .table td {
+    @apply px-4 py-2 text-sm text-gray-900 border-b border-gray-100;
+  }
+  
+  /* 滑块样式 */
+  .slider {
+    @apply w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 bg-primary-600 rounded-full cursor-pointer hover:bg-primary-700 transition-colors duration-200;
+  }
+  
+  .slider::-moz-range-thumb {
+    @apply w-4 h-4 bg-primary-600 rounded-full cursor-pointer hover:bg-primary-700 transition-colors duration-200 border-0;
+  }
+  
+  /* 开关样式 */
+  .switch {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .switch-checked {
+    @apply switch bg-primary-600;
+  }
+  
+  .switch-unchecked {
+    @apply switch bg-gray-200;
+  }
+  
+  .switch-thumb {
+    @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200;
+  }
+  
+  .switch-thumb-checked {
+    @apply switch-thumb translate-x-6;
+  }
+  
+  .switch-thumb-unchecked {
+    @apply switch-thumb translate-x-1;
+  }
+  
+  /* 进度条样式 */
+  .progress {
+    @apply w-full bg-gray-200 rounded-full h-2;
+  }
+  
+  .progress-bar {
+    @apply bg-primary-600 h-2 rounded-full transition-all duration-300 ease-out;
+  }
+  
+  /* 工具提示样式 */
+  .tooltip {
+    @apply absolute z-50 px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg pointer-events-none opacity-0 transition-opacity duration-200;
+  }
+  
+  .tooltip-visible {
+    @apply tooltip opacity-100;
+  }
+  
+  /* 模态框样式 */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-xl shadow-xl max-w-md w-full mx-4 max-h-screen overflow-y-auto;
+  }
+  
+  .modal-header {
+    @apply px-6 py-4 border-b border-gray-200;
+  }
+  
+  .modal-body {
+    @apply px-6 py-4;
+  }
+  
+  .modal-footer {
+    @apply px-6 py-4 border-t border-gray-200 flex justify-end space-x-2;
+  }
+  
+  /* 桌面应用侧边栏样式 */
+  .sidebar {
+    @apply bg-white border-r border-gray-200 h-full flex flex-col shadow-sm;
+  }
+  
+  .sidebar-header {
+    @apply px-6 py-4 border-b border-gray-200;
+  }
+  
+  .sidebar-content {
+    @apply flex-1 overflow-y-auto p-4;
+  }
+  
+  .sidebar-footer {
+    @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
+  }
+  
+  /* 桌面应用主内容区域样式 */
+  .main-content {
+    @apply flex-1 flex flex-col h-full bg-gray-100;
+  }
+  
+  .main-header {
+    @apply bg-white border-b border-gray-200 px-6 py-4 shadow-sm;
+  }
+  
+  .main-body {
+    @apply flex-1 overflow-auto p-8 bg-gray-50;
+  }
+  
+  /* 紧急停止按钮样式 - Mac风格 */
+  .emergency-stop {
+    @apply bg-red-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-all duration-150 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95;
+  }
+  
+  /* 数据卡片样式 */
+  .data-card {
+    @apply bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .data-card-value {
+    @apply text-2xl font-bold text-gray-900;
+  }
+  
+  .data-card-label {
+    @apply text-sm text-gray-600 mt-1;
+  }
+  
+  .data-card-change {
+    @apply text-xs font-medium mt-2;
+  }
+  
+  .data-card-change-positive {
+    @apply data-card-change text-success-600;
+  }
+  
+  .data-card-change-negative {
+    @apply data-card-change text-danger-600;
+  }
+  
+  /* 流程节点样式 */
+  .flow-node {
+    @apply bg-white border-2 border-gray-300 rounded-lg p-3 min-w-[120px] shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .flow-node-selected {
+    @apply flow-node border-primary-500 ring-2 ring-primary-200;
+  }
+  
+  .flow-node-executing {
+    @apply flow-node border-warning-500 bg-warning-50;
+  }
+  
+  .flow-node-completed {
+    @apply flow-node border-success-500 bg-success-50;
+  }
+  
+  .flow-node-error {
+    @apply flow-node border-danger-500 bg-danger-50;
+  }
+  
+  /* 响应式工具类 */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175) rgb(243 244 246);
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgb(243 244 246);
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgb(156 163 175);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgb(107 114 128);
+  }
+}
+
+/* 自定义工具类 */
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+  
+  .animation-delay-150 {
+    animation-delay: 150ms;
+  }
+}
+
+/* 动画定义 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break {
+    page-break-after: always;
+  }
+}
