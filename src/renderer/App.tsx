@@ -8,7 +8,6 @@ import MotorControl from './pages/MotorControl';
 import Telemetry from './pages/Telemetry';
 import FlowDesigner from './pages/FlowDesigner';
 import Settings from './pages/Settings';
-import CommandCenter from './pages/CommandCenter';
 import { useDeviceStore } from './stores/deviceStore';
 import { useTelemetryStore } from './stores/telemetryStore';
 import { useFlowStore } from './stores/flowStore';
@@ -160,14 +159,6 @@ function App() {
         <Route path="/motor-control" element={<MotorControl />} />
         <Route path="/telemetry" element={<Telemetry />} />
         <Route path="/flow" element={<FlowDesigner />} />
-        <Route path="/command-center" element={<CommandCenter onExecuteCommand={async (commandKey, params) => {
-          try {
-            await window.electronAPI.commandsExecute(commandKey, params);
-            logStore.addLog('info', `执行命令: ${commandKey}`);
-          } catch (error) {
-            logStore.addLog('error', `命令执行失败: ${error}`);
-          }
-        }} />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
       

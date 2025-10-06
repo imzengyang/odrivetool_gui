@@ -1,13 +1,22 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { FlowCanvas } from '../components/FlowCanvas';
 import { NodeLibrary } from '../components/NodeLibrary';
 import { NodeProperties } from '../components/NodeProperties';
 import { useFlowStore } from '../stores/flowStore';
+import { useLogStore } from '../stores/logStore';
 import type { Node, Edge } from 'react-flow-renderer';
 import type { FlowNode, FlowEdge } from '../../shared/types';
+import type { ParsedCommand, CommandCategory } from '../../shared/types/commands';
+import DynamicCommandForm from '../components/DynamicCommandForm';
+import { CommandPanel } from '../components/CommandPanel';
 
 const FlowDesigner: React.FC = () => {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [activeTab, setActiveTab] = useState<'properties' | 'commands'>('properties');
+  const [commands, setCommands] = useState<ParsedCommand[]>([]);
+  const [categories, setCategories] = useState<CommandCategory[]>([]);
+  const [commandLoading, setCommandLoading] = useState(false);
+  
   const { 
     currentFlow, 
     setCurrentFlow, 
@@ -20,6 +29,39 @@ const FlowDesigner: React.FC = () => {
     resumeFlow, 
     stopFlow 
   } = useFlowStore();
+  
+  const { addLog } = useLogStore();
+
+  // 加载命令数据
+  useEffect(() => {
+    loadCommands();
+  }, []);
+
+  const loadCommands = async () => {
+    try {
+      setCommandLoading(true);
+      const allCommands = await window.electronAPI.invoke('commands:get-all');
+      const allCategories = await window.electronAPI.invoke('commands:get-categories');
+      
+      setCommands(allCommands);
+      setCategories(allCategories);
+    } catch (error) {
+      console.error('加载命令失败:', error);
+      addLog('error', `加载命令失败: ${error}`);
+    } finally {
+      setCommandLoading(false);
+    }
+  };
+
+  // 处理命令执行
+  const handleExecuteCommand = async (commandKey: string, params: Record<string, any>) => {
+    try {
+      await window.electronAPI.commandsExecute(commandKey, params);
+      addLog('info', `执行命令: ${commandKey}`);
+    } catch (error) {
+      addLog('error', `命令执行失败: ${error}`);
+    }
+  };
 
   // 处理节点变化
   const handleNodesChange = useCallback((nodes: Node[]) => {
@@ -320,12 +362,52 @@ const FlowDesigner: React.FC = () => {
         </div>
 
         {/* 右侧属性面板 */}
-        <div className="w-80 bg-white border-l border-gray-200">
-          <NodeProperties
-            selectedNode={selectedNode}
-            onNodeUpdate={handleNodeUpdate}
-            onNodeDelete={handleNodeDelete}
-          />
+        <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+          {/* 标签页导航 */}
+          <div className="border-b border-gray-200">
+            <nav className="flex" aria-label="Tabs">
+              <button
+                className={`flex-1 py-3 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'properties'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+                onClick={() => setActiveTab('properties')}
+              >
+                节点属性
+              </button>
+              <button
+                className={`flex-1 py-3 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'commands'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+                onClick={() => setActiveTab('commands')}
+              >
+                命令执行
+              </button>
+            </nav>
+          </div>
+
+          {/* 内容区域 */}
+          <div className="flex-1 overflow-hidden">
+            {activeTab === 'properties' && (
+              <NodeProperties
+                selectedNode={selectedNode}
+                onNodeUpdate={handleNodeUpdate}
+                onNodeDelete={handleNodeDelete}
+              />
+            )}
+
+            {activeTab === 'commands' && (
+              <CommandPanel
+                commands={commands}
+                categories={categories}
+                onExecuteCommand={handleExecuteCommand}
+                loading={commandLoading}
+              />
+            )}
+          </div>
         </div>
       </div>
 

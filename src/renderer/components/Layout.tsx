@@ -8,8 +8,7 @@ import {
   Activity, 
   RotateCw, 
   Wrench,
-  Bell,
-  Terminal 
+  Bell
 } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -22,7 +21,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { path: '/motor-control', label: '电机控制', icon: <Gamepad2 className="w-4 h-4" /> },
     { path: '/telemetry', label: '实时监控', icon: <Activity className="w-4 h-4" /> },
     { path: '/flow', label: '流程设计', icon: <RotateCw className="w-4 h-4" /> },
-    { path: '/command-center', label: '命令中心', icon: <Terminal className="w-4 h-4" /> },
     { path: '/settings', label: '设置', icon: <Wrench className="w-4 h-4" /> },
   ];
 

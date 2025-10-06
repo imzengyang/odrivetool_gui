@@ -70,54 +70,25 @@ export const NodeLibrary: React.FC<NodeLibraryProps> = ({ onNodeDragStart }) => 
                   {category}
                   <span className="ml-2 text-xs text-gray-500">({nodes.length})</span>
                 </h4>
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   {nodes.map((nodeType) => (
                     <div
                       key={nodeType.type}
-                      className={`p-3 border-2 rounded cursor-move transition-all hover:shadow-md border-l-4`}
+                      className={`p-2 border rounded cursor-move transition-all hover:shadow-sm hover:border-opacity-60 flex flex-col items-center justify-center text-center`}
                       style={{
-                        borderColor: nodeType.color + '40',
-                        borderLeftColor: nodeType.color,
-                        backgroundColor: nodeType.color + '10'
+                        borderColor: nodeType.color + '60',
+                        backgroundColor: nodeType.color + '08',
+                        minHeight: '60px'
                       }}
                       draggable
                       onDragStart={(event) => onDragStart(event, nodeType.type)}
+                      title={nodeType.description}
                     >
-                      <div className="flex items-start space-x-3">
-                        <div className="text-lg flex-shrink-0">
-                          {nodeType.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 text-sm">
-                            {nodeType.name}
-                          </div>
-                          <div className="text-xs text-gray-600 mt-1 line-clamp-2">
-                            {nodeType.description}
-                          </div>
-                          <div className="flex items-center space-x-2 mt-2">
-                            <span className="text-xs bg-white px-2 py-1 rounded">
-                              {nodeType.inputs.length} 输入
-                            </span>
-                            <span className="text-xs bg-white px-2 py-1 rounded">
-                              {nodeType.outputs.length} 输出
-                            </span>
-                          </div>
-                          {nodeType.defaultConfig && Object.keys(nodeType.defaultConfig).length > 0 && (
-                            <div className="mt-2 text-xs text-gray-500">
-                              <div className="font-medium">默认配置:</div>
-                              <div className="mt-1 space-y-1">
-                                {Object.entries(nodeType.defaultConfig).slice(0, 2).map(([key, value]) => (
-                                  <div key={key} className="truncate">
-                                    <span className="font-medium">{key}:</span> {String(value)}
-                                  </div>
-                                ))}
-                                {Object.keys(nodeType.defaultConfig).length > 2 && (
-                                  <div className="text-gray-400">...</div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                      <div className="text-lg mb-1">
+                        {nodeType.icon}
+                      </div>
+                      <div className="text-xs font-medium text-gray-800 leading-tight">
+                        {nodeType.name}
                       </div>
                     </div>
                   ))}
