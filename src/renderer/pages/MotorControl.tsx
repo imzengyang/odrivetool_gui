@@ -3,11 +3,16 @@ import React from 'react';
 const MotorControl: React.FC = () => {
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">电机控制</h1>
-      
-      <div className="mb-6">
-        <button className="emergency-stop">紧急停止</button>
+
+      <div className='flex items-center justify-between'>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">电机控制</h1>
+        </div> 
+        <div className='flex items-center space-x-3'>
+          <button className="emergency-stop">紧急停止</button>
+        </div> 
       </div>
+
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">

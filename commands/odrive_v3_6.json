@@ -1,0 +1,996 @@
+{
+  "version": "0.5.1",
+  "gui_version": "0.1.0",
+  "transport": "UART/USB CDC",
+  "newline": "\n",
+  "commands": [
+    {
+      "key": "help",
+      "name": "帮助",
+      "template": "h",
+      "description": "显示固件支持的命令帮助信息",
+      "category": "系统管理",
+      "params": []
+    },
+    {
+      "key": "info",
+      "name": "系统信息",
+      "template": "i",
+      "description": "显示硬件版本、固件版本和序列号",
+      "category": "系统管理",
+      "params": []
+    },
+    {
+      "key": "odrv0.axis{axis}.requested_state",
+      "name": "设置轴状态",
+      "template": "w axis{axis}.requested_state {state}",
+      "description": "设置轴的请求状态",
+      "category": "轴控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "state",
+          "required": true,
+          "options": [
+            { "value": "1", "label": "1 - IDLE (空闲)" },
+            { "value": "2", "label": "2 - STARTUP_SEQUENCE (启动序列)" },
+            { "value": "3", "label": "3 - FULL_CALIBRATION_SEQUENCE (完整校准)" },
+            { "value": "4", "label": "4 - MOTOR_CALIBRATION (电机校准)" },
+            { "value": "5", "label": "5 - SENSORLESS_CONTROL (无感控制)" },
+            { "value": "6", "label": "6 - ENCODER_INDEX_SEARCH (编码器索引搜索)" },
+            { "value": "7", "label": "7 - ENCODER_OFFSET_CALIBRATION (编码器偏移校准)" },
+            { "value": "8", "label": "8 - CLOSED_LOOP_CONTROL (闭环控制)" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "position_control_q",
+      "name": "位置控制(限制模式)",
+      "template": "q {axis} {pos} {vel_lim} {torque_lim}",
+      "description": "位置控制命令，速度和力矩为限制值。推荐用于一次发送一个设定点的基本应用",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "pos", "required": true, "placeholder": "位置(圈数)" },
+        { "name": "vel_lim", "required": true, "placeholder": "速度限制(圈/秒)" },
+        { "name": "torque_lim", "required": true, "placeholder": "力矩限制(Nm)" }
+      ]
+    },
+    {
+      "key": "position_control_p",
+      "name": "位置控制(前馈模式)",
+      "template": "p {axis} {pos} {vel_ff} {torque_ff}",
+      "description": "位置控制命令，速度和力矩为前馈值。用于实时控制器流式发送设定点和跟踪轨迹",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "pos", "required": true, "placeholder": "位置(圈数)" },
+        { "name": "vel_ff", "required": true, "placeholder": "速度前馈(圈/秒)" },
+        { "name": "torque_ff", "required": true, "placeholder": "力矩前馈(Nm)" }
+      ]
+    },
+    {
+      "key": "velocity_control",
+      "name": "速度控制",
+      "template": "v {axis} {vel} {torque_ff}",
+      "description": "速度控制命令，带力矩前馈",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "vel", "required": true, "placeholder": "速度(圈/秒)" },
+        { "name": "torque_ff", "required": true, "placeholder": "力矩前馈(Nm)" }
+      ]
+    },
+    {
+      "key": "torque_control",
+      "name": "力矩控制",
+      "template": "c {axis} {torque}",
+      "description": "力矩控制命令",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "torque", "required": true, "placeholder": "力矩(Nm)" }
+      ]
+    },
+    {
+      "key": "feed_watchdog",
+      "name": "喂看门狗",
+      "template": "f {axis}",
+      "description": "更新看门狗定时器而不改变任何设定点",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "odrv0.axis{axis}.controller.input_pos",
+      "name": "位置目标",
+      "template": "w axis{axis}.controller.input_pos {pos}",
+      "description": "设置位置目标 (圈数)",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "pos", "required": true, "placeholder": "例如 0.0" }
+      ]
+    },
+    {
+      "key": "odrv0.axis{axis}.controller.input_vel",
+      "name": "速度目标",
+      "template": "w axis{axis}.controller.input_vel {vel}",
+      "description": "设置速度目标 (圈/秒)",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "vel", "required": true, "placeholder": "例如 1.0" }
+      ]
+    },
+    {
+      "key": "odrv0.axis{axis}.controller.input_torque",
+      "name": "力矩目标",
+      "template": "w axis{axis}.controller.input_torque {torque}",
+      "description": "设置力矩目标 (Nm)",
+      "category": "运动控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "torque", "required": true, "placeholder": "例如 0.1" }
+      ]
+    },
+    {
+      "key": "read_errors",
+      "name": "读取轴错误",
+      "template": "r axis{axis}.error",
+      "description": "读取轴错误码",
+      "category": "错误管理",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_motor_errors",
+      "name": "读取电机错误",
+      "template": "r axis{axis}.motor.error",
+      "description": "读取电机错误码",
+      "category": "错误管理",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_encoder_errors",
+      "name": "读取编码器错误",
+      "template": "r axis{axis}.encoder.error",
+      "description": "读取编码器错误码",
+      "category": "错误管理",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_controller_errors",
+      "name": "读取控制器错误",
+      "template": "r axis{axis}.controller.error",
+      "description": "读取控制器错误码",
+      "category": "错误管理",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "clear_all_errors",
+      "name": "清除所有错误",
+      "template": "sc",
+      "description": "清除所有轴的错误标志并重新使能制动电阻（系统级，推荐）",
+      "category": "错误管理",
+      "params": []
+    },
+    {
+      "key": "clear_axis_error",
+      "name": "清除轴错误",
+      "template": "w axis{axis}.error 0",
+      "description": "仅清除指定轴的错误标志位",
+      "category": "错误管理",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "set_control_mode",
+      "name": "设置控制模式",
+      "template": "w axis{axis}.controller.config.control_mode {mode}",
+      "description": "设置控制模式",
+      "category": "轴控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "mode",
+          "required": true,
+          "options": [
+            { "value": "1", "label": "1 - VOLTAGE_CONTROL (电压控制)" },
+            { "value": "2", "label": "2 - TORQUE_CONTROL (力矩控制)" },
+            { "value": "3", "label": "3 - VELOCITY_CONTROL (速度控制)" },
+            { "value": "4", "label": "4 - POSITION_CONTROL (位置控制)" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "set_input_mode",
+      "name": "设置输入模式",
+      "template": "w axis{axis}.controller.config.input_mode {mode}",
+      "description": "设置输入模式",
+      "category": "轴控制",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "mode",
+          "required": true,
+          "options": [
+            { "value": "0", "label": "0 - INACTIVE (未激活)" },
+            { "value": "1", "label": "1 - PASSTHROUGH (直通模式)" },
+            { "value": "2", "label": "2 - VEL_RAMP (速度斜坡)" },
+            { "value": "3", "label": "3 - POS_FILTER (位置滤波)" },
+            { "value": "5", "label": "5 - TRAP_TRAJ (梯形轨迹)" },
+            { "value": "6", "label": "6 - TORQUE_RAMP (力矩斜坡)" },
+            { "value": "7", "label": "7 - MIRROR (镜像模式)" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_pos",
+      "name": "读取位置",
+      "template": "r axis{axis}.encoder.pos_estimate",
+      "description": "读取当前位置估计 (圈数)",
+      "category": "状态读取",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_vel",
+      "name": "读取速度",
+      "template": "r axis{axis}.encoder.vel_estimate",
+      "description": "读取当前速度估计 (圈/秒)",
+      "category": "状态读取",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_current",
+      "name": "读取电流",
+      "template": "r axis{axis}.motor.current_control.Iq_measured",
+      "description": "读取电机电流 (A)",
+      "category": "状态读取",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_vbus",
+      "name": "读取总线电压",
+      "template": "r vbus_voltage",
+      "description": "读取总线电压 (V)",
+      "category": "状态读取",
+      "params": []
+    },
+    {
+      "key": "read_ibus",
+      "name": "读取总线电流",
+      "template": "r ibus",
+      "description": "读取总线电流 (A)",
+      "category": "状态读取",
+      "params": []
+    },
+    {
+      "key": "dc_bus_undervoltage",
+      "name": "设置欠压保护阈值",
+      "template": "w config.dc_bus_undervoltage_trip_level {voltage}",
+      "description": "设置DC总线欠压保护阈值 (V)",
+      "category": "系统配置",
+      "params": [
+        { "name": "voltage", "required": true, "default": 8, "placeholder": "例如 8(24V系统) 或 16(48V系统)" }
+      ]
+    },
+    {
+      "key": "dc_bus_overvoltage",
+      "name": "设置过压保护阈值",
+      "template": "w config.dc_bus_overvoltage_trip_level {voltage}",
+      "description": "设置DC总线过压保护阈值 (V)",
+      "category": "系统配置",
+      "params": [
+        { "name": "voltage", "required": true, "default": 26, "placeholder": "例如 26(24V系统) 或 52(48V系统)" }
+      ]
+    },
+    {
+      "key": "save_config",
+      "name": "保存配置",
+      "template": "ss",
+      "description": "保存当前配置到非易失性存储器",
+      "category": "系统管理",
+      "params": []
+    },
+    {
+      "key": "erase_config",
+      "name": "擦除配置",
+      "template": "se",
+      "description": "擦除配置并恢复出厂设置",
+      "category": "系统管理",
+      "params": []
+    },
+    {
+      "key": "reboot",
+      "name": "重启",
+      "template": "sr",
+      "description": "重启ODrive设备",
+      "category": "系统管理",
+      "params": []
+    },
+    {
+      "key": "motor_pole_pairs",
+      "name": "设置电机极对数",
+      "template": "w axis{axis}.motor.config.pole_pairs {pairs}",
+      "description": "设置电机极对数(常见值:7、14、21等)",
+      "category": "电机配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "pairs",
+          "required": true,
+          "default": 7,
+          "options": [
+            { "value": "7", "label": "7 极对数" },
+            { "value": "14", "label": "14 极对数" },
+            { "value": "21", "label": "21 极对数" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "motor_type",
+      "name": "设置电机类型",
+      "template": "w axis{axis}.motor.config.motor_type {type}",
+      "description": "设置电机类型",
+      "category": "电机配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "type",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "0 - HIGH_CURRENT (大电流电机)" },
+            { "value": "1", "label": "1 - GIMBAL (云台电机)" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "motor_current_limit",
+      "name": "设置电流限制",
+      "template": "w axis{axis}.motor.config.current_lim {current}",
+      "description": "设置电机电流限制 (A)",
+      "category": "电机配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "current", "required": true, "default": 10, "placeholder": "例如 10" }
+      ]
+    },
+    {
+      "key": "motor_calibration_current",
+      "name": "设置校准电流",
+      "template": "w axis{axis}.motor.config.calibration_current {current}",
+      "description": "设置电机校准电流 (A)",
+      "category": "电机配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "current", "required": true, "default": 10, "placeholder": "例如 10" }
+      ]
+    },
+    {
+      "key": "motor_torque_constant",
+      "name": "设置力矩常数",
+      "template": "w axis{axis}.motor.config.torque_constant {constant}",
+      "description": "设置电机力矩常数 (Nm/A)，约等于 8.23/Kv，其中Kv单位为rpm/V",
+      "category": "电机配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "constant", "required": true, "placeholder": "例如 0.055 (对于150Kv电机)" }
+      ]
+    },
+    {
+      "key": "encoder_mode",
+      "name": "设置编码器模式",
+      "template": "w axis{axis}.encoder.config.mode {mode}",
+      "description": "设置编码器模式",
+      "category": "编码器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "mode",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "0 - INCREMENTAL (增量式)" },
+            { "value": "1", "label": "1 - HALL (霍尔传感器)" },
+            { "value": "2", "label": "2 - SINUSOIDAL (正弦编码器)" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "encoder_use_index",
+      "name": "设置编码器索引使用",
+      "template": "w axis{axis}.encoder.config.use_index {use}",
+      "description": "设置是否使用编码器索引信号",
+      "category": "编码器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "use",
+          "required": true,
+          "default": "True",
+          "options": [
+            { "value": "True", "label": "True - 使用索引信号" },
+            { "value": "False", "label": "False - 不使用索引信号" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "encoder_cpr",
+      "name": "设置编码器分辨率",
+      "template": "w axis{axis}.encoder.config.cpr {cpr}",
+      "description": "设置编码器CPR分辨率(每圈脉冲数)",
+      "category": "编码器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "cpr",
+          "required": true,
+          "default": 4000,
+          "options": [
+            { "value": "1000", "label": "1000 CPR" },
+            { "value": "2000", "label": "2000 CPR" },
+            { "value": "4000", "label": "4000 CPR" },
+            { "value": "8192", "label": "8192 CPR" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "encoder_bandwidth",
+      "name": "设置编码器带宽",
+      "template": "w axis{axis}.encoder.config.bandwidth {bandwidth}",
+      "description": "设置编码器滤波带宽 (Hz)，若固件支持",
+      "category": "编码器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "bandwidth", "required": true, "default": 1000, "placeholder": "例如 1000" }
+      ]
+    },
+    {
+      "key": "controller_pos_gain",
+      "name": "设置位置增益",
+      "template": "w axis{axis}.controller.config.pos_gain {gain}",
+      "description": "设置位置控制器增益",
+      "category": "控制器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "gain", "required": true, "default": 1.0, "placeholder": "例如 1.0" }
+      ]
+    },
+    {
+      "key": "controller_vel_gain",
+      "name": "设置速度增益",
+      "template": "w axis{axis}.controller.config.vel_gain {gain}",
+      "description": "设置速度控制器增益",
+      "category": "控制器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "gain", "required": true, "default": 0.05, "placeholder": "例如 0.05" }
+      ]
+    },
+    {
+      "key": "controller_vel_integrator_gain",
+      "name": "设置速度积分器增益",
+      "template": "w axis{axis}.controller.config.vel_integrator_gain {gain}",
+      "description": "设置速度控制器积分器增益",
+      "category": "控制器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "gain", "required": true, "default": 0.5, "placeholder": "例如 0.5" }
+      ]
+    },
+    {
+      "key": "controller_vel_limit",
+      "name": "设置速度限制",
+      "template": "w axis{axis}.controller.config.vel_limit {limit}",
+      "description": "设置速度限制(圈/秒)",
+      "category": "控制器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "limit", "required": true, "default": 2, "placeholder": "例如 2" }
+      ]
+    },
+    {
+      "key": "controller_vel_ramp_rate",
+      "name": "设置速度爬坡率",
+      "template": "w axis{axis}.controller.config.vel_ramp_rate {rate}",
+      "description": "设置速度爬坡率(圈/秒²)，用于VEL_RAMP输入模式",
+      "category": "控制器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "rate", "required": true, "default": 1, "placeholder": "例如 1.0" }
+      ]
+    },
+    {
+      "key": "controller_torque_ramp_rate",
+      "name": "设置力矩爬坡率",
+      "template": "w axis{axis}.controller.config.torque_ramp_rate {rate}",
+      "description": "设置力矩爬坡率(Nm/秒)，用于TORQUE_RAMP输入模式",
+      "category": "控制器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "rate", "required": true, "default": 0.1, "placeholder": "例如 0.1" }
+      ]
+    },
+    {
+      "key": "trap_traj_vel_limit",
+      "name": "梯形轨迹速度限制",
+      "template": "w axis{axis}.trap_traj.config.vel_limit {limit}",
+      "description": "设置梯形轨迹规划器速度限制",
+      "category": "轨迹规划",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "limit", "required": true, "default": 2, "placeholder": "圈/秒" }
+      ]
+    },
+    {
+      "key": "trap_traj_accel_limit",
+      "name": "梯形轨迹加速度限制",
+      "template": "w axis{axis}.trap_traj.config.accel_limit {limit}",
+      "description": "设置梯形轨迹规划器加速度限制",
+      "category": "轨迹规划",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "limit", "required": true, "default": 0.5, "placeholder": "圈/秒²" }
+      ]
+    },
+    {
+      "key": "trap_traj_decel_limit",
+      "name": "梯形轨迹减速度限制",
+      "template": "w axis{axis}.trap_traj.config.decel_limit {limit}",
+      "description": "设置梯形轨迹规划器减速度限制",
+      "category": "轨迹规划",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "limit", "required": true, "default": 0.5, "placeholder": "圈/秒²" }
+      ]
+    },
+    {
+      "key": "watchdog_timeout",
+      "name": "看门狗超时时间",
+      "template": "w axis{axis}.config.watchdog_timeout {timeout}",
+      "description": "设置看门狗超时时间(秒)",
+      "category": "安全配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        { "name": "timeout", "required": true, "default": 0, "placeholder": "秒(0为禁用)" }
+      ]
+    },
+    {
+      "key": "enable_watchdog",
+      "name": "启用看门狗",
+      "template": "w axis{axis}.config.enable_watchdog {enable}",
+      "description": "启用或禁用看门狗功能",
+      "category": "安全配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "enable",
+          "required": true,
+          "default": "False",
+          "options": [
+            { "value": "True", "label": "True - 启用看门狗" },
+            { "value": "False", "label": "False - 禁用看门狗" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "circular_setpoints",
+      "name": "循环设定点模式",
+      "template": "w axis{axis}.controller.config.circular_setpoints {enable}",
+      "description": "启用循环位置设定点模式(位置在0-1圈内循环)",
+      "category": "控制器配置",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        },
+        {
+          "name": "enable",
+          "required": true,
+          "default": "False",
+          "options": [
+            { "value": "True", "label": "True - 启用" },
+            { "value": "False", "label": "False - 禁用" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_current_state",
+      "name": "读取当前状态",
+      "template": "r axis{axis}.current_state",
+      "description": "读取轴的当前状态",
+      "category": "状态读取",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_motor_temp",
+      "name": "读取电机温度",
+      "template": "r axis{axis}.motor.get_inverter_temp()",
+      "description": "读取电机逆变器温度",
+      "category": "状态读取",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "check_all_errors_detailed",
+      "name": "详细错误检查",
+      "template": "r axis{axis}.error; r axis{axis}.motor.error; r axis{axis}.encoder.error; r axis{axis}.controller.error",
+      "description": "一次性读取指定轴的所有错误信息（轴、电机、编码器、控制器）",
+      "category": "错误管理",
+      "params": [
+        {
+          "name": "axis",
+          "required": true,
+          "default": 0,
+          "options": [
+            { "value": "0", "label": "轴0" },
+            { "value": "1", "label": "轴1" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -13,17 +13,17 @@ import type {
 // 定义暴露给渲染进程的 API
 const electronAPI = {
   // 设备管理
-  scanDevices: () => ipcRenderer.invoke('scan-devices'),
-  connectDevice: (port: string) => ipcRenderer.invoke('connect-device', port),
-  disconnectDevice: () => ipcRenderer.invoke('disconnect-device'),
+  scanDevices: () => ipcRenderer.invoke('serial:get-ports'),
+  connectDevice: (port: string) => ipcRenderer.invoke('serial:connect', port),
+  disconnectDevice: () => ipcRenderer.invoke('serial:disconnect'),
 
   // ODrive 协议操作
-  odriveRead: (path: string) => ipcRenderer.invoke('odrive-read', path),
-  odriveWrite: (path: string, value: any) => ipcRenderer.invoke('odrive-write', path, value),
-  odriveRequestState: (state: string) => ipcRenderer.invoke('odrive-request-state', state),
+  odriveRead: (path: string) => ipcRenderer.invoke('odrive:read', path),
+  odriveWrite: (path: string, value: any) => ipcRenderer.invoke('odrive:write', path, value),
+  odriveRequestState: (state: string) => ipcRenderer.invoke('odrive:write', `axis0.requested_state`, state),
   odriveStartTelemetry: (keys: string[], rateHz: number) => 
-    ipcRenderer.invoke('odrive-start-telemetry', keys, rateHz),
-  odriveStopTelemetry: () => ipcRenderer.invoke('odrive-stop-telemetry'),
+    ipcRenderer.invoke('odrive:start-telemetry', keys, rateHz),
+  odriveStopTelemetry: () => ipcRenderer.invoke('odrive:stop-telemetry'),
 
   // 流程控制
   flowStart: (flowDefinition: FlowDefinition) => ipcRenderer.invoke('flow-start', flowDefinition),
@@ -36,8 +36,26 @@ const electronAPI = {
   showOpenDialog: (options: any) => ipcRenderer.invoke('show-open-dialog', options),
 
   // 日志操作
-  getLogs: () => ipcRenderer.invoke('get-logs'),
-  clearLogs: () => ipcRenderer.invoke('clear-logs'),
+  getLogs: () => ipcRenderer.invoke('log:get-logs'),
+  clearLogs: () => ipcRenderer.invoke('log:clear'),
+
+  // 命令系统
+  commandsGetAll: () => ipcRenderer.invoke('commands:get-all'),
+  commandsGetCategories: () => ipcRenderer.invoke('commands:get-categories'),
+  commandsGetByCategory: (category: string) => ipcRenderer.invoke('commands:get-by-category', category),
+  commandsSearch: (query: string) => ipcRenderer.invoke('commands:search', query),
+  commandsValidate: (commandKey: string, params: Record<string, any>) => 
+    ipcRenderer.invoke('commands:validate', commandKey, params),
+  commandsExecute: (commandKey: string, params: Record<string, any>) => 
+    ipcRenderer.invoke('commands:execute', commandKey, params),
+  commandsGetDefaults: (commandKey: string) => ipcRenderer.invoke('commands:get-defaults', commandKey),
+
+  // 应用控制
+  getAppVersion: () => ipcRenderer.invoke('app:get-version'),
+  quitApp: () => ipcRenderer.invoke('app:quit'),
+
+  // 通用调用方法
+  invoke: (channel: string, ...args: any[]) => ipcRenderer.invoke(channel, ...args),
 
   // 事件监听
   onDevicesScanned: (callback: (devices: ODriveDevice[]) => void) => {

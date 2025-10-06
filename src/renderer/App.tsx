@@ -8,6 +8,7 @@ import MotorControl from './pages/MotorControl';
 import Telemetry from './pages/Telemetry';
 import FlowDesigner from './pages/FlowDesigner';
 import Settings from './pages/Settings';
+import CommandCenter from './pages/CommandCenter';
 import { useDeviceStore } from './stores/deviceStore';
 import { useTelemetryStore } from './stores/telemetryStore';
 import { useFlowStore } from './stores/flowStore';
@@ -23,7 +24,17 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        console.log('开始初始化应用...');
+        
+        // 检查 electronAPI 是否可用
+        if (!window.electronAPI) {
+          console.warn('electronAPI 不可用，使用模拟数据');
+          setIsReady(true);
+          return;
+        }
+
         // 初始化各个 store
+        console.log('初始化 stores...');
         await Promise.all([
           deviceStore.initialize(),
           telemetryStore.initialize(),
@@ -32,8 +43,10 @@ function App() {
         ]);
 
         // 设置全局事件监听
+        console.log('设置事件监听器...');
         setupGlobalEventListeners();
 
+        console.log('应用初始化完成');
         setIsReady(true);
       } catch (error) {
         console.error('应用初始化失败:', error);
@@ -147,6 +160,14 @@ function App() {
         <Route path="/motor-control" element={<MotorControl />} />
         <Route path="/telemetry" element={<Telemetry />} />
         <Route path="/flow" element={<FlowDesigner />} />
+        <Route path="/command-center" element={<CommandCenter onExecuteCommand={async (commandKey, params) => {
+          try {
+            await window.electronAPI.commandsExecute(commandKey, params);
+            logStore.addLog('info', `执行命令: ${commandKey}`);
+          } catch (error) {
+            logStore.addLog('error', `命令执行失败: ${error}`);
+          }
+        }} />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
       

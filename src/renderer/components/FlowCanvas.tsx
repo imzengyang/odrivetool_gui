@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -14,7 +14,8 @@ import ReactFlow, {
   Position,
 } from 'react-flow-renderer';
 import { useFlowStore } from '../stores/flowStore';
-import type { FlowNode as FlowNodeType } from '../../shared/types';
+import { flowNodeGenerator } from '../services/FlowNodeGenerator';
+import type { FlowNode as FlowNodeType, DynamicNodeType } from '../../shared/types';
 
 // 节点类型定义
 interface CustomNodeData {
@@ -191,24 +192,47 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
   onNodeDelete 
 }) => {
   const { currentFlow, isRunning, currentNodeId } = useFlowStore();
+  const [dynamicNodeTypes, setDynamicNodeTypes] = useState<DynamicNodeType[]>([]);
+
+  // 加载动态节点类型
+  useEffect(() => {
+    const loadNodeTypes = async () => {
+      try {
+        const commands = await window.electronAPI.commandsGetAll();
+        const nodeTypes = flowNodeGenerator.getAllNodeTypes(commands);
+        setDynamicNodeTypes(nodeTypes);
+      } catch (error) {
+        console.error('加载节点类型失败:', error);
+      }
+    };
+    loadNodeTypes();
+  }, []);
 
   // 转换流程数据为 ReactFlow 格式
   const initialNodes = useMemo(() => {
     if (!currentFlow?.nodes) return [];
     
-    return currentFlow.nodes.map((node: FlowNodeType): Node => ({
-      id: node.id,
-      type: 'custom',
-      position: node.position,
-      data: {
-        label: nodeTemplates.find(t => t.type === node.type)?.label || node.type,
-        description: nodeTemplates.find(t => t.type === node.type)?.description || '',
-        type: node.type,
-        config: node.data,
-        status: isRunning && currentNodeId === node.id ? 'running' : 'idle',
-      },
-    }));
-  }, [currentFlow?.nodes, isRunning, currentNodeId]);
+    return currentFlow.nodes.map((node: FlowNodeType): Node => {
+      // 尝试从动态节点类型中获取信息
+      const dynamicNodeType = dynamicNodeTypes.find(t => t.type === node.type);
+      const staticTemplate = nodeTemplates.find(t => t.type === node.type);
+      
+      return {
+        id: node.id,
+        type: 'custom',
+        position: node.position,
+        data: {
+          label: dynamicNodeType?.name || staticTemplate?.label || node.type,
+          description: dynamicNodeType?.description || staticTemplate?.description || '',
+          type: node.type,
+          config: node.data,
+          status: isRunning && currentNodeId === node.id ? 'running' : 'idle',
+          icon: dynamicNodeType?.icon,
+          color: dynamicNodeType?.color,
+        },
+      };
+    });
+  }, [currentFlow?.nodes, isRunning, currentNodeId, dynamicNodeTypes]);
 
   const initialEdges = useMemo(() => {
     if (!currentFlow?.edges) return [];
@@ -340,18 +364,24 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
       y: event.clientY - reactFlowBounds.top - 25,
     };
 
-    const template = nodeTemplates.find(t => t.type === type);
-    if (!template) return;
+    // 优先查找动态节点类型
+    const dynamicNodeType = dynamicNodeTypes.find(t => t.type === type);
+    const staticTemplate = nodeTemplates.find(t => t.type === type);
+    
+    const nodeType = dynamicNodeType || staticTemplate;
+    if (!nodeType) return;
 
     const newNode: Node = {
       id: `node-${Date.now()}`,
       type: 'custom',
       position,
       data: {
-        label: template.label,
-        description: template.description,
-        type: template.type,
-        config: template.defaultConfig,
+        label: nodeType.name || nodeType.label,
+        description: nodeType.description,
+        type: nodeType.type,
+        config: nodeType.defaultConfig || {},
+        icon: dynamicNodeType?.icon,
+        color: dynamicNodeType?.color,
       },
     };
 
@@ -361,7 +391,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
       const updatedNodes = [...nodes, newNode];
       onNodesChange(updatedNodes);
     }
-  }, [setNodes, nodes, currentFlow, onNodesChange]);
+  }, [setNodes, nodes, currentFlow, onNodesChange, dynamicNodeTypes]);
 
   return (
     <div className="w-full h-full">

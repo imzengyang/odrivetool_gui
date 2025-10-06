@@ -1,49 +1,36 @@
-import React from 'react';
-import { nodeTemplates } from './FlowCanvas';
+import React, { useState, useEffect } from 'react';
+import { flowNodeGenerator } from '../services/FlowNodeGenerator';
+import type { DynamicNodeType } from '../../shared/types/flow';
 
 interface NodeLibraryProps {
   onNodeDragStart: (event: React.DragEvent, nodeType: string) => void;
 }
 
 export const NodeLibrary: React.FC<NodeLibraryProps> = ({ onNodeDragStart }) => {
-  const getNodeIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      'connect': '🔌',
-      'disconnect': '🔌',
-      'set-param': '⚙️',
-      'calibrate': '🎯',
-      'position-control': '📍',
-      'velocity-control': '🚀',
-      'current-control': '⚡',
-      'wait': '⏰',
-      'condition': '🔀',
-      'loop': '🔄',
-      'log': '📝',
-      'export': '💾',
-      'error-handler': '⚠️',
-      'emergency-stop': '🛑',
-    };
-    return icons[type] || '📦';
-  };
+  const [nodeTypes, setNodeTypes] = useState<DynamicNodeType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getNodeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      'connect': 'border-blue-300 bg-blue-50 hover:bg-blue-100',
-      'disconnect': 'border-red-300 bg-red-50 hover:bg-red-100',
-      'set-param': 'border-purple-300 bg-purple-50 hover:bg-purple-100',
-      'calibrate': 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100',
-      'position-control': 'border-green-300 bg-green-50 hover:bg-green-100',
-      'velocity-control': 'border-cyan-300 bg-cyan-50 hover:bg-cyan-100',
-      'current-control': 'border-orange-300 bg-orange-50 hover:bg-orange-100',
-      'wait': 'border-gray-300 bg-gray-50 hover:bg-gray-100',
-      'condition': 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100',
-      'loop': 'border-pink-300 bg-pink-50 hover:bg-pink-100',
-      'log': 'border-teal-300 bg-teal-50 hover:bg-teal-100',
-      'export': 'border-lime-300 bg-lime-50 hover:bg-lime-100',
-      'error-handler': 'border-red-300 bg-red-50 hover:bg-red-100',
-      'emergency-stop': 'border-red-400 bg-red-100 hover:bg-red-200',
-    };
-    return colors[type] || 'border-gray-300 bg-gray-50 hover:bg-gray-100';
+  useEffect(() => {
+    loadNodeTypes();
+  }, []);
+
+  const loadNodeTypes = async () => {
+    try {
+      // 获取命令数据
+      const commands = await window.electronAPI.commandsGetAll();
+      
+      // 生成节点类型
+      const generatedNodes = flowNodeGenerator.getAllNodeTypes(commands);
+      setNodeTypes(generatedNodes);
+    } catch (error) {
+      console.error('加载节点类型失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getNodeColor = (nodeType: DynamicNodeType) => {
+    const color = nodeType.color || '#6B7280';
+    return `border-opacity-30 bg-opacity-10 hover:bg-opacity-20`;
   };
 
   const onDragStart = (event: React.DragEvent, nodeType: string) => {
@@ -60,40 +47,85 @@ export const NodeLibrary: React.FC<NodeLibraryProps> = ({ onNodeDragStart }) => 
       </div>
       
       <div className="p-4 space-y-3 overflow-y-auto max-h-[600px]">
-        {nodeTemplates.map((template) => (
-          <div
-            key={template.type}
-            className={`p-3 border-2 rounded cursor-move transition-colors ${getNodeColor(template.type)}`}
-            draggable
-            onDragStart={(event) => onDragStart(event, template.type)}
-          >
-            <div className="flex items-start space-x-3">
-              <div className="text-2xl flex-shrink-0">
-                {getNodeIcon(template.type)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 text-sm">
-                  {template.label}
-                </div>
-                <div className="text-xs text-gray-600 mt-1">
-                  {template.description}
-                </div>
-                {template.defaultConfig && Object.keys(template.defaultConfig).length > 0 && (
-                  <div className="mt-2 text-xs text-gray-500">
-                    <div className="font-medium">默认配置:</div>
-                    <div className="mt-1 space-y-1">
-                      {Object.entries(template.defaultConfig).map(([key, value]) => (
-                        <div key={key} className="truncate">
-                          <span className="font-medium">{key}:</span> {String(value)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+        {loading ? (
+          <div className="text-center text-gray-500 py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p>加载节点库中...</p>
           </div>
-        ))}
+        ) : (
+          <>
+            {/* 按类别分组显示节点 */}
+            {Object.entries(
+              nodeTypes.reduce((groups, node) => {
+                if (!groups[node.category]) {
+                  groups[node.category] = [];
+                }
+                groups[node.category].push(node);
+                return groups;
+              }, {} as Record<string, DynamicNodeType[]>)
+            ).map(([category, nodes]) => (
+              <div key={category} className="mb-6">
+                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                  <span className="mr-2">{nodes[0]?.icon || '📦'}</span>
+                  {category}
+                  <span className="ml-2 text-xs text-gray-500">({nodes.length})</span>
+                </h4>
+                <div className="space-y-2">
+                  {nodes.map((nodeType) => (
+                    <div
+                      key={nodeType.type}
+                      className={`p-3 border-2 rounded cursor-move transition-all hover:shadow-md border-l-4`}
+                      style={{
+                        borderColor: nodeType.color + '40',
+                        borderLeftColor: nodeType.color,
+                        backgroundColor: nodeType.color + '10'
+                      }}
+                      draggable
+                      onDragStart={(event) => onDragStart(event, nodeType.type)}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="text-lg flex-shrink-0">
+                          {nodeType.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 text-sm">
+                            {nodeType.name}
+                          </div>
+                          <div className="text-xs text-gray-600 mt-1 line-clamp-2">
+                            {nodeType.description}
+                          </div>
+                          <div className="flex items-center space-x-2 mt-2">
+                            <span className="text-xs bg-white px-2 py-1 rounded">
+                              {nodeType.inputs.length} 输入
+                            </span>
+                            <span className="text-xs bg-white px-2 py-1 rounded">
+                              {nodeType.outputs.length} 输出
+                            </span>
+                          </div>
+                          {nodeType.defaultConfig && Object.keys(nodeType.defaultConfig).length > 0 && (
+                            <div className="mt-2 text-xs text-gray-500">
+                              <div className="font-medium">默认配置:</div>
+                              <div className="mt-1 space-y-1">
+                                {Object.entries(nodeType.defaultConfig).slice(0, 2).map(([key, value]) => (
+                                  <div key={key} className="truncate">
+                                    <span className="font-medium">{key}:</span> {String(value)}
+                                  </div>
+                                ))}
+                                {Object.keys(nodeType.defaultConfig).length > 2 && (
+                                  <div className="text-gray-400">...</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </div>
       
       <div className="p-4 border-t border-gray-200 bg-gray-50">
