@@ -16,6 +16,16 @@ declare const electronAPI: {
     showOpenDialog: (options: any) => Promise<any>;
     getLogs: () => Promise<any>;
     clearLogs: () => Promise<any>;
+    commandsGetAll: () => Promise<any>;
+    commandsGetCategories: () => Promise<any>;
+    commandsGetByCategory: (category: string) => Promise<any>;
+    commandsSearch: (query: string) => Promise<any>;
+    commandsValidate: (commandKey: string, params: Record<string, any>) => Promise<any>;
+    commandsExecute: (commandKey: string, params: Record<string, any>) => Promise<any>;
+    commandsGetDefaults: (commandKey: string) => Promise<any>;
+    getAppVersion: () => Promise<any>;
+    quitApp: () => Promise<any>;
+    invoke: (channel: string, ...args: any[]) => Promise<any>;
     onDevicesScanned: (callback: (devices: ODriveDevice[]) => void) => void;
     onDeviceConnected: (callback: (device: ODriveDevice) => void) => void;
     onDeviceDisconnected: (callback: () => void) => void;

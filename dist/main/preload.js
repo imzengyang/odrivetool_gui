@@ -4,15 +4,15 @@ const electron_1 = require("electron");
 // 定义暴露给渲染进程的 API
 const electronAPI = {
     // 设备管理
-    scanDevices: () => electron_1.ipcRenderer.invoke('scan-devices'),
-    connectDevice: (port) => electron_1.ipcRenderer.invoke('connect-device', port),
-    disconnectDevice: () => electron_1.ipcRenderer.invoke('disconnect-device'),
+    scanDevices: () => electron_1.ipcRenderer.invoke('serial:get-ports'),
+    connectDevice: (port) => electron_1.ipcRenderer.invoke('serial:connect', port),
+    disconnectDevice: () => electron_1.ipcRenderer.invoke('serial:disconnect'),
     // ODrive 协议操作
-    odriveRead: (path) => electron_1.ipcRenderer.invoke('odrive-read', path),
-    odriveWrite: (path, value) => electron_1.ipcRenderer.invoke('odrive-write', path, value),
-    odriveRequestState: (state) => electron_1.ipcRenderer.invoke('odrive-request-state', state),
-    odriveStartTelemetry: (keys, rateHz) => electron_1.ipcRenderer.invoke('odrive-start-telemetry', keys, rateHz),
-    odriveStopTelemetry: () => electron_1.ipcRenderer.invoke('odrive-stop-telemetry'),
+    odriveRead: (path) => electron_1.ipcRenderer.invoke('odrive:read', path),
+    odriveWrite: (path, value) => electron_1.ipcRenderer.invoke('odrive:write', path, value),
+    odriveRequestState: (state) => electron_1.ipcRenderer.invoke('odrive:write', `axis0.requested_state`, state),
+    odriveStartTelemetry: (keys, rateHz) => electron_1.ipcRenderer.invoke('odrive:start-telemetry', keys, rateHz),
+    odriveStopTelemetry: () => electron_1.ipcRenderer.invoke('odrive:stop-telemetry'),
     // 流程控制
     flowStart: (flowDefinition) => electron_1.ipcRenderer.invoke('flow-start', flowDefinition),
     flowPause: () => electron_1.ipcRenderer.invoke('flow-pause'),
@@ -22,8 +22,21 @@ const electronAPI = {
     showSaveDialog: (options) => electron_1.ipcRenderer.invoke('show-save-dialog', options),
     showOpenDialog: (options) => electron_1.ipcRenderer.invoke('show-open-dialog', options),
     // 日志操作
-    getLogs: () => electron_1.ipcRenderer.invoke('get-logs'),
-    clearLogs: () => electron_1.ipcRenderer.invoke('clear-logs'),
+    getLogs: () => electron_1.ipcRenderer.invoke('log:get-logs'),
+    clearLogs: () => electron_1.ipcRenderer.invoke('log:clear'),
+    // 命令系统
+    commandsGetAll: () => electron_1.ipcRenderer.invoke('commands:get-all'),
+    commandsGetCategories: () => electron_1.ipcRenderer.invoke('commands:get-categories'),
+    commandsGetByCategory: (category) => electron_1.ipcRenderer.invoke('commands:get-by-category', category),
+    commandsSearch: (query) => electron_1.ipcRenderer.invoke('commands:search', query),
+    commandsValidate: (commandKey, params) => electron_1.ipcRenderer.invoke('commands:validate', commandKey, params),
+    commandsExecute: (commandKey, params) => electron_1.ipcRenderer.invoke('commands:execute', commandKey, params),
+    commandsGetDefaults: (commandKey) => electron_1.ipcRenderer.invoke('commands:get-defaults', commandKey),
+    // 应用控制
+    getAppVersion: () => electron_1.ipcRenderer.invoke('app:get-version'),
+    quitApp: () => electron_1.ipcRenderer.invoke('app:quit'),
+    // 通用调用方法
+    invoke: (channel, ...args) => electron_1.ipcRenderer.invoke(channel, ...args),
     // 事件监听
     onDevicesScanned: (callback) => {
         electron_1.ipcRenderer.on('devices-scanned', (_, devices) => callback(devices));

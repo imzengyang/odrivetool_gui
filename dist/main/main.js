@@ -1,281 +1,312 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
-const path_1 = require("path");
+const path = __importStar(require("path"));
 const SerialPortManager_1 = require("./services/SerialPortManager");
 const ODriveProtocol_1 = require("./services/ODriveProtocol");
-const FlowRunner_1 = require("./services/FlowRunner");
+const CommandLoader_1 = require("./services/CommandLoader");
 const LogService_1 = require("./services/LogService");
-class ODriveApp {
-    constructor() {
-        this.mainWindow = null;
-        this.serialPortManager = new SerialPortManager_1.SerialPortManager();
-        this.odriveProtocol = new ODriveProtocol_1.ODriveProtocol(this.serialPortManager);
-        this.flowRunner = new FlowRunner_1.FlowRunner();
-        this.logService = new LogService_1.LogService();
+// 保持对窗口对象的全局引用
+let mainWindow = null;
+let serialManager = null;
+let odriveProtocol = null;
+let logService = null;
+const isDev = process.env.NODE_ENV === 'development';
+function createWindow() {
+    // 创建浏览器窗口
+    mainWindow = new electron_1.BrowserWindow({
+        width: 1200,
+        height: 800,
+        minWidth: 800,
+        minHeight: 600,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
+        },
+        icon: path.join(__dirname, '../../assets/icon.png'),
+        show: false,
+        titleBarStyle: 'default'
+    });
+    // 加载应用
+    if (isDev) {
+        mainWindow.loadURL('http://localhost:5173');
+        mainWindow.webContents.openDevTools();
     }
-    createWindow() {
-        // 创建浏览器窗口 - 采用流行的16:10比例设计
-        this.mainWindow = new electron_1.BrowserWindow({
-            width: 1440, // 流行的笔记本屏幕宽度
-            height: 900, // 16:10比例，适合工具类应用
-            minWidth: 1280, // 最小宽度支持720p内容
-            minHeight: 800, // 最小高度保证界面完整性
-            webPreferences: {
-                nodeIntegration: false,
-                contextIsolation: true,
-                preload: (0, path_1.join)(__dirname, 'preload.js'),
-            },
-            titleBarStyle: 'default',
-            show: false,
-            center: true, // 窗口居中显示
-        });
-        // 加载应用
-        this.mainWindow.loadFile((0, path_1.join)(__dirname, '../renderer/index.html'));
-        // 开发模式下打开开发者工具
-        if (!electron_1.app.isPackaged) {
-            this.mainWindow.webContents.openDevTools();
-        }
-        // 窗口准备好后显示
-        this.mainWindow.once('ready-to-show', () => {
-            this.mainWindow?.show();
-        });
-        // 窗口关闭时清理资源
-        this.mainWindow.on('closed', () => {
-            this.mainWindow = null;
-            this.cleanup();
-        });
+    else {
+        mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     }
-    setupMenu() {
-        const template = [
-            {
-                label: '文件',
-                submenu: [
-                    {
-                        label: '新建流程',
-                        accelerator: 'CmdOrCtrl+N',
-                        click: () => {
-                            this.mainWindow?.webContents.send('menu-new-flow');
-                        },
-                    },
-                    {
-                        label: '打开流程',
-                        accelerator: 'CmdOrCtrl+O',
-                        click: () => {
-                            this.mainWindow?.webContents.send('menu-open-flow');
-                        },
-                    },
-                    {
-                        label: '保存流程',
-                        accelerator: 'CmdOrCtrl+S',
-                        click: () => {
-                            this.mainWindow?.webContents.send('menu-save-flow');
-                        },
-                    },
-                    { type: 'separator' },
-                    {
-                        label: '导出配置',
-                        click: () => {
-                            this.mainWindow?.webContents.send('menu-export-config');
-                        },
-                    },
-                    {
-                        label: '导入配置',
-                        click: () => {
-                            this.mainWindow?.webContents.send('menu-import-config');
-                        },
-                    },
-                    { type: 'separator' },
-                    {
-                        label: '退出',
-                        accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
-                        click: () => {
-                            electron_1.app.quit();
-                        },
-                    },
-                ],
-            },
-            {
-                label: '设备',
-                submenu: [
-                    {
-                        label: '扫描设备',
-                        accelerator: 'CmdOrCtrl+R',
-                        click: () => {
-                            this.scanDevices();
-                        },
-                    },
-                    {
-                        label: '连接设备',
-                        click: () => {
-                            this.mainWindow?.webContents.send('menu-connect-device');
-                        },
-                    },
-                    {
-                        label: '断开设备',
-                        click: () => {
-                            this.disconnectDevice();
-                        },
-                    },
-                ],
-            },
-            {
-                label: '帮助',
-                submenu: [
-                    {
-                        label: '关于',
-                        click: () => {
-                            electron_1.dialog.showMessageBox(this.mainWindow, {
-                                type: 'info',
-                                title: '关于 ODrive GUI',
-                                message: 'ODrive 控制界面应用',
-                                detail: '版本 1.0.0\n用于 ODrive v0.5.1 固件的电机控制与监控',
-                            });
-                        },
-                    },
-                ],
-            },
-        ];
-        const menu = electron_1.Menu.buildFromTemplate(template);
-        electron_1.Menu.setApplicationMenu(menu);
+    // 窗口准备好后显示
+    mainWindow.once('ready-to-show', () => {
+        mainWindow?.show();
+        // 初始化服务
+        initializeServices();
+    });
+    // 当窗口关闭时触发
+    mainWindow.on('closed', () => {
+        mainWindow = null;
+        cleanupServices();
+    });
+}
+/**
+ * 初始化服务
+ */
+async function initializeServices() {
+    try {
+        // 初始化日志服务
+        logService = new LogService_1.LogService();
+        // 初始化串口管理器
+        serialManager = new SerialPortManager_1.SerialPortManager();
+        // 初始化ODrive协议
+        odriveProtocol = new ODriveProtocol_1.ODriveProtocol(serialManager);
+        // 加载命令配置
+        await CommandLoader_1.commandLoader.loadFromFile(path.join(__dirname, '../../commands/odrive_v3_6.json'));
+        // 设置事件监听器
+        setupEventListeners();
+        logService.info('应用服务初始化完成');
+        // 发送初始化完成事件到渲染进程
+        mainWindow?.webContents.send('services-initialized');
     }
-    setupWindowShortcuts() {
-        if (!this.mainWindow)
-            return;
-        // 窗口级别的紧急停止快捷键
-        this.mainWindow.webContents.on('before-input-event', (event, input) => {
-            // 当空格键被按下时触发紧急停止
-            if (input.key === 'Space' && !input.meta && !input.control && !input.alt && !input.shift) {
-                event.preventDefault();
-                this.emergencyStop();
-            }
-            // 当 Ctrl+Space 被按下时也触发紧急停止
-            if (input.key === 'Space' && (input.control || input.meta) && !input.alt && !input.shift) {
-                event.preventDefault();
-                this.emergencyStop();
-            }
-        });
-    }
-    setupIPC() {
-        // 设备管理
-        electron_1.ipcMain.handle('scan-devices', async () => {
-            return await this.serialPortManager.scanDevices();
-        });
-        electron_1.ipcMain.handle('connect-device', async (_, port) => {
-            return await this.serialPortManager.connect(port);
-        });
-        electron_1.ipcMain.handle('disconnect-device', async () => {
-            return await this.serialPortManager.disconnect();
-        });
-        // ODrive 协议操作
-        electron_1.ipcMain.handle('odrive-read', async (_, path) => {
-            return await this.odriveProtocol.read(path);
-        });
-        electron_1.ipcMain.handle('odrive-write', async (_, path, value) => {
-            return await this.odriveProtocol.write(path, value);
-        });
-        electron_1.ipcMain.handle('odrive-request-state', async (_, state) => {
-            return await this.odriveProtocol.requestState(state);
-        });
-        electron_1.ipcMain.handle('odrive-start-telemetry', async (_, keys, rateHz) => {
-            return await this.odriveProtocol.startTelemetry(keys, rateHz);
-        });
-        electron_1.ipcMain.handle('odrive-stop-telemetry', async () => {
-            return await this.odriveProtocol.stopTelemetry();
-        });
-        // 流程控制
-        electron_1.ipcMain.handle('flow-start', async (_, flowDefinition) => {
-            return await this.flowRunner.start(flowDefinition);
-        });
-        electron_1.ipcMain.handle('flow-pause', async () => {
-            return await this.flowRunner.pause();
-        });
-        electron_1.ipcMain.handle('flow-resume', async () => {
-            return await this.flowRunner.resume();
-        });
-        electron_1.ipcMain.handle('flow-stop', async () => {
-            return await this.flowRunner.stop();
-        });
-        // 文件操作
-        electron_1.ipcMain.handle('show-save-dialog', async (_, options) => {
-            return await electron_1.dialog.showSaveDialog(this.mainWindow, options);
-        });
-        electron_1.ipcMain.handle('show-open-dialog', async (_, options) => {
-            return await electron_1.dialog.showOpenDialog(this.mainWindow, options);
-        });
-        // 日志操作
-        electron_1.ipcMain.handle('get-logs', async () => {
-            return this.logService.getLogs();
-        });
-        electron_1.ipcMain.handle('clear-logs', async () => {
-            return this.logService.clearLogs();
-        });
-    }
-    async scanDevices() {
-        try {
-            const devices = await this.serialPortManager.scanDevices();
-            this.mainWindow?.webContents.send('devices-scanned', devices);
-        }
-        catch (error) {
-            this.logService.error('扫描设备失败', error);
-        }
-    }
-    async disconnectDevice() {
-        try {
-            await this.serialPortManager.disconnect();
-            this.mainWindow?.webContents.send('device-disconnected');
-        }
-        catch (error) {
-            this.logService.error('断开设备失败', error);
-        }
-    }
-    async emergencyStop() {
-        try {
-            // 立即停止所有电机
-            await this.odriveProtocol.emergencyStop();
-            this.flowRunner.stop();
-            this.mainWindow?.webContents.send('emergency-stop');
-            this.logService.warn('紧急停止已触发');
-        }
-        catch (error) {
-            // 即使紧急停止失败，也要确保流程停止和事件发送
-            this.flowRunner.stop();
-            this.mainWindow?.webContents.send('emergency-stop');
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            if (errorMessage.includes('设备未连接')) {
-                this.logService.warn('紧急停止: 设备未连接，仅停止本地流程');
-            }
-            else {
-                this.logService.error('紧急停止失败', error);
-            }
-        }
-    }
-    cleanup() {
-        this.serialPortManager.disconnect();
-        this.odriveProtocol.stopTelemetry();
-        this.flowRunner.stop();
-    }
-    async initialize() {
-        await electron_1.app.whenReady();
-        this.createWindow();
-        this.setupMenu();
-        this.setupWindowShortcuts();
-        this.setupIPC();
-        electron_1.app.on('window-all-closed', () => {
-            if (process.platform !== 'darwin') {
-                electron_1.app.quit();
-            }
-        });
-        electron_1.app.on('activate', () => {
-            if (electron_1.BrowserWindow.getAllWindows().length === 0) {
-                this.createWindow();
-            }
-        });
+    catch (error) {
+        logService?.error('服务初始化失败:', error);
+        mainWindow?.webContents.send('services-error', error);
     }
 }
-// 创建应用实例并初始化
-const odriveApp = new ODriveApp();
-odriveApp.initialize().catch((error) => {
-    console.error('应用初始化失败', error);
+/**
+ * 清理服务
+ */
+function cleanupServices() {
+    try {
+        odriveProtocol?.cleanup();
+        serialManager?.cleanup();
+        CommandLoader_1.commandLoader?.cleanup();
+        logService?.info('应用服务清理完成');
+    }
+    catch (error) {
+        console.error('服务清理失败:', error);
+    }
+}
+// 当所有窗口关闭时退出应用
+electron_1.app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        electron_1.app.quit();
+    }
+});
+electron_1.app.on('activate', () => {
+    if (electron_1.BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
+});
+// 应用准备就绪时创建窗口
+electron_1.app.whenReady().then(() => {
+    createWindow();
+    // 设置菜单
+    if (isDev) {
+        electron_1.Menu.setApplicationMenu(electron_1.Menu.buildFromTemplate([
+            {
+                label: '开发',
+                submenu: [
+                    { role: 'reload' },
+                    { role: 'forceReload' },
+                    { type: 'separator' },
+                    { role: 'toggleDevTools' }
+                ]
+            }
+        ]));
+    }
+    else {
+        electron_1.Menu.setApplicationMenu(null);
+    }
+});
+// IPC 处理程序
+// 串口管理
+electron_1.ipcMain.handle('serial:get-ports', async () => {
+    if (!serialManager)
+        throw new Error('串口管理器未初始化');
+    return await serialManager.scanDevices();
+});
+electron_1.ipcMain.handle('serial:connect', async (event, port) => {
+    if (!serialManager)
+        throw new Error('串口管理器未初始化');
+    return await serialManager.connect(port);
+});
+electron_1.ipcMain.handle('serial:disconnect', async () => {
+    if (!serialManager)
+        throw new Error('串口管理器未初始化');
+    return await serialManager.disconnect();
+});
+electron_1.ipcMain.handle('serial:is-connected', () => {
+    if (!serialManager)
+        return false;
+    return serialManager.isConnected();
+});
+electron_1.ipcMain.handle('serial:write', async (event, data) => {
+    if (!serialManager)
+        throw new Error('串口管理器未初始化');
+    return await serialManager.write(data);
+});
+// ODrive 协议
+electron_1.ipcMain.handle('odrive:read', async (event, path) => {
+    if (!odriveProtocol)
+        throw new Error('ODrive协议未初始化');
+    return await odriveProtocol.read(path);
+});
+electron_1.ipcMain.handle('odrive:write', async (event, path, value) => {
+    if (!odriveProtocol)
+        throw new Error('ODrive协议未初始化');
+    return await odriveProtocol.write(path, value);
+});
+electron_1.ipcMain.handle('odrive:emergency-stop', async () => {
+    if (!odriveProtocol)
+        throw new Error('ODrive协议未初始化');
+    return await odriveProtocol.emergencyStop();
+});
+electron_1.ipcMain.handle('odrive:start-telemetry', async (event, keys, rateHz) => {
+    if (!odriveProtocol)
+        throw new Error('ODrive协议未初始化');
+    return await odriveProtocol.startTelemetry(keys, rateHz);
+});
+electron_1.ipcMain.handle('odrive:stop-telemetry', () => {
+    if (!odriveProtocol)
+        throw new Error('ODrive协议未初始化');
+    odriveProtocol.stopTelemetry();
+});
+electron_1.ipcMain.handle('odrive:calibrate-motor', async () => {
+    if (!odriveProtocol)
+        throw new Error('ODrive协议未初始化');
+    return await odriveProtocol.calibrateMotor();
+});
+electron_1.ipcMain.handle('odrive:calibrate-encoder', async () => {
+    if (!odriveProtocol)
+        throw new Error('ODrive协议未初始化');
+    return await odriveProtocol.calibrateEncoder();
+});
+// 命令系统
+electron_1.ipcMain.handle('commands:get-all', () => {
+    return CommandLoader_1.commandLoader.getAllCommands();
+});
+electron_1.ipcMain.handle('commands:get-categories', () => {
+    return CommandLoader_1.commandLoader.getCategories();
+});
+electron_1.ipcMain.handle('commands:get-by-category', (event, category) => {
+    return CommandLoader_1.commandLoader.getCommandsByCategory(category);
+});
+electron_1.ipcMain.handle('commands:search', (event, query) => {
+    return CommandLoader_1.commandLoader.searchCommands(query);
+});
+electron_1.ipcMain.handle('commands:validate', (event, commandKey, params) => {
+    return CommandLoader_1.commandLoader.validateCommand(commandKey, params);
+});
+electron_1.ipcMain.handle('commands:execute', (event, commandKey, params) => {
+    return CommandLoader_1.commandLoader.executeCommand(commandKey, params);
+});
+electron_1.ipcMain.handle('commands:get-defaults', (event, commandKey) => {
+    return CommandLoader_1.commandLoader.getCommandDefaults(commandKey);
+});
+// 日志服务
+electron_1.ipcMain.handle('log:get-logs', () => {
+    if (!logService)
+        return [];
+    return logService.getLogs();
+});
+electron_1.ipcMain.handle('log:clear', () => {
+    if (!logService)
+        return;
+    logService.clearLogs();
+});
+// 应用控制
+electron_1.ipcMain.handle('app:get-version', () => {
+    return electron_1.app.getVersion();
+});
+electron_1.ipcMain.handle('app:quit', () => {
     electron_1.app.quit();
+});
+// 设置事件监听器函数
+function setupEventListeners() {
+    if (!serialManager || !odriveProtocol || !logService)
+        return;
+    serialManager.on('connected', () => {
+        mainWindow?.webContents.send('serial:connected');
+    });
+    serialManager.on('disconnected', () => {
+        mainWindow?.webContents.send('serial:disconnected');
+    });
+    serialManager.on('data', (data) => {
+        mainWindow?.webContents.send('serial:data', data);
+    });
+    serialManager.on('error', (error) => {
+        mainWindow?.webContents.send('serial:error', error);
+        logService?.error('串口错误:', error);
+    });
+    odriveProtocol.on('telemetry-data', (data) => {
+        mainWindow?.webContents.send('odrive:telemetry-data', data);
+    });
+    odriveProtocol.on('telemetry-started', () => {
+        mainWindow?.webContents.send('odrive:telemetry-started');
+    });
+    odriveProtocol.on('telemetry-stopped', () => {
+        mainWindow?.webContents.send('odrive:telemetry-stopped');
+    });
+    odriveProtocol.on('motor-calibrated', () => {
+        mainWindow?.webContents.send('odrive:motor-calibrated');
+    });
+    odriveProtocol.on('encoder-calibrated', () => {
+        mainWindow?.webContents.send('odrive:encoder-calibrated');
+    });
+    odriveProtocol.on('emergency-stop', () => {
+        mainWindow?.webContents.send('odrive:emergency-stop');
+    });
+}
+CommandLoader_1.commandLoader.on('commands-loaded', (data) => {
+    mainWindow?.webContents.send('commands:loaded', data);
+});
+CommandLoader_1.commandLoader.on('error', (error) => {
+    mainWindow?.webContents.send('commands:error', error);
+    logService?.error('命令加载器错误:', error);
+});
+// 错误处理
+process.on('uncaughtException', (error) => {
+    logService?.error('未捕获的异常:', error);
+    console.error('未捕获的异常:', error);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    logService?.error('未处理的Promise拒绝:', reason);
+    console.error('未处理的Promise拒绝:', reason);
+});
+// 应用退出前清理
+electron_1.app.on('before-quit', () => {
+    cleanupServices();
 });
