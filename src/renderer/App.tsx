@@ -112,7 +112,7 @@ function App() {
       <div className="flex items-center justify-center h-screen bg-gray-100">
         <div className="text-center">
           {/* 应用Logo - macOS风格 */}
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-8">
+          <div className="w-16 h-16 bg-white rounded flex items-center justify-center shadow-lg mx-auto mb-8">
             <span className="text-2xl font-bold text-blue-600">OD</span>
           </div>
           

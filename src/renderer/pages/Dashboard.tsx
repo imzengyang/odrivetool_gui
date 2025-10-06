@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 欢迎标题 - macOS风格 */}
-      <div className="bg-white/70 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 shadow-sm">
+      <div className="bg-white/70 backdrop-blur-xl rounded p-6 border border-gray-200/50 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800 mb-1">欢迎使用 ODrive GUI</h1>
@@ -125,7 +125,7 @@ const Dashboard: React.FC = () => {
         {stats.map((stat, index) => {
           const colors = getColorClasses(stat.color);
           return (
-            <div key={index} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-5 hover:bg-white/90 transition-all duration-200">
+            <div key={index} className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-5 hover:bg-white/90 transition-all duration-200">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <p className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">{stat.title}</p>
@@ -137,7 +137,7 @@ const Dashboard: React.FC = () => {
                   </div>
                   <p className="text-xs text-gray-400 mt-2">{stat.description}</p>
                 </div>
-                <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center ${colors.icon} opacity-80`}>
+                <div className={`w-10 h-10 rounded ${colors.bg} flex items-center justify-center ${colors.icon} opacity-80`}>
                   {stat.icon}
                 </div>
               </div>
@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* 快速操作 */}
         <div className="lg:col-span-2">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-4">
+          <div className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-4">
             <h2 className="text-base font-semibold text-gray-800 mb-3">快速操作</h2>
             <div className="grid grid-cols-2 gap-3">
               {quickActions.map((action, index) => {
@@ -158,7 +158,7 @@ const Dashboard: React.FC = () => {
                 return (
                   <button
                     key={index}
-                    className={`p-4 rounded-lg border ${colors.border} ${colors.bg} hover:bg-white/90 hover:shadow-sm transition-all duration-200 group`}
+                    className={`p-4 rounded border ${colors.border} ${colors.bg} hover:bg-white/90 hover:shadow-sm transition-all duration-200 group`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="group-hover:scale-105 transition-transform duration-200 opacity-80">
@@ -177,7 +177,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* 最近活动 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-4">
+        <div className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-4">
           <h2 className="text-base font-semibold text-gray-800 mb-3">最近活动</h2>
           <div className="space-y-3">
             {recentActivities.map((activity, index) => (
@@ -199,7 +199,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* 系统状态面板 - macOS风格 */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-4">
+      <div className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-4">
         <h2 className="text-base font-semibold text-gray-800 mb-3">系统状态</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center">

@@ -63,7 +63,7 @@ export const NodeLibrary: React.FC<NodeLibraryProps> = ({ onNodeDragStart }) => 
         {nodeTemplates.map((template) => (
           <div
             key={template.type}
-            className={`p-3 border-2 rounded-lg cursor-move transition-colors ${getNodeColor(template.type)}`}
+            className={`p-3 border-2 rounded cursor-move transition-colors ${getNodeColor(template.type)}`}
             draggable
             onDragStart={(event) => onDragStart(event, template.type)}
           >

@@ -18,7 +18,7 @@ const Telemetry: React.FC = () => {
             <h2 className="card-title">总线电压</h2>
             <p className="card-description">实时电压监控</p>
           </div>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+          <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
             <span className="text-gray-500">图表区域</span>
           </div>
         </div>
@@ -28,7 +28,7 @@ const Telemetry: React.FC = () => {
             <h2 className="card-title">电机速度</h2>
             <p className="card-description">实时速度监控</p>
           </div>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+          <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
             <span className="text-gray-500">图表区域</span>
           </div>
         </div>
@@ -38,7 +38,7 @@ const Telemetry: React.FC = () => {
             <h2 className="card-title">电流监控</h2>
             <p className="card-description">实时电流监控</p>
           </div>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+          <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
             <span className="text-gray-500">图表区域</span>
           </div>
         </div>
@@ -48,7 +48,7 @@ const Telemetry: React.FC = () => {
             <h2 className="card-title">温度监控</h2>
             <p className="card-description">实时温度监控</p>
           </div>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+          <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
             <span className="text-gray-500">图表区域</span>
           </div>
         </div>

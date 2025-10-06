@@ -31,7 +31,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {/* 应用标题 - 简洁设计 */}
         <div className="px-6 py-5 border-b border-gray-200/50">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded flex items-center justify-center shadow-sm">
               <span className="text-sm font-bold text-white">OD</span>
             </div>
             <div>
@@ -48,7 +48,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`group flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-150 ${
+                className={`group flex items-center px-3 py-2 text-sm rounded transition-all duration-150 ${
                   location.pathname === item.path
                     ? 'bg-blue-500 text-white shadow-sm'
                     : 'text-gray-700 hover:bg-gray-100'

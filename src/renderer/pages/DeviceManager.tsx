@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Search, RefreshCw, Wifi, CheckCircle, Zap, Thermometer } from 'lucide-react';
 
 const DeviceManager: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
@@ -74,7 +75,7 @@ const DeviceManager: React.FC = () => {
           <button
             onClick={handleScan}
             disabled={isScanning}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-150 ${
+            className={`px-4 py-2 rounded text-sm font-medium transition-all duration-150 ${
               isScanning
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
@@ -87,14 +88,14 @@ const DeviceManager: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <span>🔍</span>
+                <Search className="w-4 h-4" />
                 <span>扫描设备</span>
               </div>
             )}
           </button>
-          <button className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors duration-150">
+          <button className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm font-medium hover:bg-gray-50 transition-colors duration-150">
             <div className="flex items-center space-x-2">
-              <span>🔄</span>
+              <RefreshCw className="w-4 h-4" />
               <span>刷新</span>
             </div>
           </button>
@@ -103,10 +104,10 @@ const DeviceManager: React.FC = () => {
 
       {/* 设备统计 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded border border-gray-200 p-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <span className="text-blue-600">📡</span>
+            <div className="w-10 h-10 bg-blue-50 rounded flex items-center justify-center">
+              <Wifi className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p className="text-sm text-gray-600">总设备数</p>
@@ -114,10 +115,10 @@ const DeviceManager: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded border border-gray-200 p-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-              <span className="text-green-600">✅</span>
+            <div className="w-10 h-10 bg-green-50 rounded flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <div>
               <p className="text-sm text-gray-600">已连接</p>
@@ -127,10 +128,10 @@ const DeviceManager: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded border border-gray-200 p-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
-              <span className="text-yellow-600">⚡</span>
+            <div className="w-10 h-10 bg-yellow-50 rounded flex items-center justify-center">
+              <Zap className="w-5 h-5 text-yellow-600" />
             </div>
             <div>
               <p className="text-sm text-gray-600">平均电压</p>
@@ -141,7 +142,7 @@ const DeviceManager: React.FC = () => {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-              <span className="text-purple-600">🌡️</span>
+              <Thermometer className="w-5 h-5 text-purple-600" />
             </div>
             <div>
               <p className="text-sm text-gray-600">平均温度</p>
@@ -152,7 +153,7 @@ const DeviceManager: React.FC = () => {
       </div>
 
       {/* 设备列表 */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="bg-white rounded shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">设备列表</h2>
         </div>
@@ -254,7 +255,7 @@ const DeviceManager: React.FC = () => {
 
       {/* 设备详情面板 */}
       {selectedDevice && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">设备详情</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -294,13 +295,13 @@ const DeviceManager: React.FC = () => {
             <div>
               <h4 className="text-sm font-medium text-gray-500 mb-2">快速操作</h4>
               <div className="space-y-2">
-                <button className="w-full px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors duration-150 shadow-sm hover:shadow-md">
+                <button className="w-full px-3 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition-colors duration-150 shadow-sm hover:shadow-md">
                   设备配置
                 </button>
-                <button className="w-full px-3 py-1.5 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors duration-150 shadow-sm hover:shadow-md">
+                <button className="w-full px-3 py-1.5 bg-green-600 text-white rounded text-sm font-medium hover:bg-green-700 transition-colors duration-150 shadow-sm hover:shadow-md">
                   电机校准
                 </button>
-                <button className="w-full px-3 py-1.5 bg-gray-600 text-white rounded-md text-sm font-medium hover:bg-gray-700 transition-colors duration-150 shadow-sm hover:shadow-md">
+                <button className="w-full px-3 py-1.5 bg-gray-600 text-white rounded text-sm font-medium hover:bg-gray-700 transition-colors duration-150 shadow-sm hover:shadow-md">
                   查看日志
                 </button>
               </div>
