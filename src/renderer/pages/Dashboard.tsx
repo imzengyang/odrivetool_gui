@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Zap, 
   RotateCw, 
@@ -10,10 +11,27 @@ import {
   Plug,
   Cpu,
   HardDrive,
-  Activity
+  Activity,
+  AlertTriangle,
+  Play,
+  Pause,
+  Square,
+  Download,
+  Upload,
+  RefreshCw
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('zh-CN'));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString('zh-CN'));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
   const stats = [
     {
       title: '设备状态',
@@ -49,18 +67,42 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  const recentActivities = [
-    { time: '10:45', action: '设备连接成功', status: 'success' },
-    { time: '10:42', action: '电机配置更新', status: 'info' },
-    { time: '10:38', action: '流程执行完成', status: 'success' },
-    { time: '10:35', action: '系统自检通过', status: 'success' }
+  const quickActions = [
+    { title: '设备连接', icon: <Plug className="w-5 h-5" />, color: 'blue', description: '连接ODrive设备', path: '/device' },
+    { title: '电机控制', icon: <Gamepad2 className="w-5 h-5" />, color: 'green', description: '快速控制面板', path: '/motor-control' },
+    { title: '实时监控', icon: <Activity className="w-5 h-5" />, color: 'purple', description: '查看实时数据', path: '/telemetry' },
+    { title: '流程设计', icon: <BarChart3 className="w-5 h-5" />, color: 'orange', description: '设计自动化流程', path: '/flow' }
   ];
 
-  const quickActions = [
-    { title: '设备扫描', icon: <Search className="w-5 h-5" />, color: 'blue', description: '扫描可用设备' },
-    { title: '电机控制', icon: <Gamepad2 className="w-5 h-5" />, color: 'green', description: '快速控制面板' },
-    { title: '数据导出', icon: <BarChart3 className="w-5 h-5" />, color: 'purple', description: '导出运行数据' },
-    { title: '系统设置', icon: <Settings className="w-5 h-5" />, color: 'gray', description: '配置系统参数' }
+  const systemControls = [
+    { 
+      title: '紧急停止', 
+      icon: <AlertTriangle className="w-5 h-5" />, 
+      color: 'red', 
+      description: '立即停止所有电机',
+      action: 'emergency-stop'
+    },
+    { 
+      title: '导出配置', 
+      icon: <Download className="w-5 h-5" />, 
+      color: 'blue', 
+      description: '保存当前配置',
+      action: 'export-config'
+    },
+    { 
+      title: '导入配置', 
+      icon: <Upload className="w-5 h-5" />, 
+      color: 'green', 
+      description: '加载配置文件',
+      action: 'import-config'
+    },
+    { 
+      title: '系统重置', 
+      icon: <RefreshCw className="w-5 h-5" />, 
+      color: 'gray', 
+      description: '重启系统',
+      action: 'system-reset'
+    }
   ];
 
   const getColorClasses = (color: string) => {
@@ -114,7 +156,7 @@ const Dashboard: React.FC = () => {
               <span className="text-sm text-gray-600">系统正常</span>
             </div>
             <div className="text-sm text-gray-400">
-              {new Date().toLocaleTimeString('zh-CN')}
+              {currentTime}
             </div>
           </div>
         </div>
@@ -147,18 +189,18 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* 主要内容区域 - macOS风格 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* 快速操作 */}
-        <div className="lg:col-span-2">
-          <div className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-4">
-            <h2 className="text-base font-semibold text-gray-800 mb-3">快速操作</h2>
+        <div className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-4">
+          <h2 className="text-base font-semibold text-gray-800 mb-3">快速操作</h2>
             <div className="grid grid-cols-2 gap-3">
               {quickActions.map((action, index) => {
                 const colors = getColorClasses(action.color);
                 return (
                   <button
                     key={index}
-                    className={`p-4 rounded border ${colors.border} ${colors.bg} hover:bg-white/90 hover:shadow-sm transition-all duration-200 group`}
+                    onClick={() => navigate(action.path)}
+                    className={`p-4 rounded border ${colors.border} ${colors.bg} hover:bg-white/90 hover:shadow-sm transition-all duration-200 group cursor-pointer`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="group-hover:scale-105 transition-transform duration-200 opacity-80">
@@ -173,69 +215,40 @@ const Dashboard: React.FC = () => {
                 );
               })}
             </div>
-          </div>
         </div>
 
-        {/* 最近活动 */}
+        {/* 系统控制 */}
         <div className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-4">
-          <h2 className="text-base font-semibold text-gray-800 mb-3">最近活动</h2>
-          <div className="space-y-3">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className={`w-1.5 h-1.5 rounded-full mt-2 ${
-                  activity.status === 'success' ? 'bg-green-500' : 'bg-blue-500'
-                }`}></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800">{activity.action}</p>
-                  <p className="text-xs text-gray-400">{activity.time}</p>
-                </div>
-              </div>
-            ))}
+          <h2 className="text-base font-semibold text-gray-800 mb-3">系统控制</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {systemControls.map((control, index) => {
+              const colors = getColorClasses(control.color);
+              return (
+                <button
+                  key={index}
+                  className={`p-4 rounded border ${colors.border} ${colors.bg} hover:bg-white/90 hover:shadow-sm transition-all duration-200 group ${
+                    control.action === 'emergency-stop' ? 'hover:bg-red-50' : ''
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`group-hover:scale-105 transition-transform duration-200 opacity-80 ${
+                      control.action === 'emergency-stop' ? 'text-red-600' : ''
+                    }`}>
+                      {control.icon}
+                    </div>
+                    <div className="text-left">
+                      <h3 className={`text-sm font-medium ${colors.text}`}>{control.title}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">{control.description}</p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-          <button className="mt-4 w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium">
-            查看全部活动 →
-          </button>
         </div>
       </div>
 
-      {/* 系统状态面板 - macOS风格 */}
-      <div className="bg-white/80 backdrop-blur-sm rounded border border-gray-200/50 p-4">
-        <h2 className="text-base font-semibold text-gray-800 mb-3">系统状态</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 bg-green-50 rounded-full flex items-center justify-center">
-              <Cpu className="w-8 h-8 text-green-600" />
-            </div>
-            <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-800">85%</span>
-            </div>
-            <p className="text-sm font-medium text-gray-800">CPU 使用率</p>
-            <p className="text-xs text-gray-400">正常范围</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 bg-blue-50 rounded-full flex items-center justify-center">
-              <Activity className="w-8 h-8 text-blue-600" />
-            </div>
-            <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-800">60%</span>
-            </div>
-            <p className="text-sm font-medium text-gray-800">内存使用</p>
-            <p className="text-xs text-gray-400">4.8GB / 8GB</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 bg-orange-50 rounded-full flex items-center justify-center">
-              <HardDrive className="w-8 h-8 text-orange-600" />
-            </div>
-            <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-800">30%</span>
-            </div>
-            <p className="text-sm font-medium text-gray-800">磁盘使用</p>
-            <p className="text-xs text-gray-400">45GB / 150GB</p>
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 };
